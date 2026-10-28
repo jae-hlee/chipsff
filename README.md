@@ -152,6 +152,7 @@ The input configuration file is a JSON file that specifies all required settings
   - **`vacuum`** *(float)*: Vacuum thickness in Ångströms (e.g., `18`).
   - **`filter_type`** *(string)*: Specifies the filter type used during relaxation.
   - **`relaxation_settings`** *(dictionary)*: Similar to `bulk_relaxation_settings`.
+  - **`reference_functional`** *(string)*: DFT functional of the JARVIS surface energies used as references, `"PBE"` (default) or `"R2SCAN"`. The surface database contains both, so only one is used per run.
 
 #### Phonon3 Settings
 
@@ -211,7 +212,7 @@ An example `input.json` file:
   "use_conventional_cell": true,
   "surface_settings": {
     "indices_list": [
-      [0, 1, 0],
+      [1, 1, 0],
       [0,0,1]
     ],
     "layers": 4,
@@ -277,9 +278,9 @@ An example `interface_input.json` file:
 - `calculate_elastic_tensor(relaxed_atoms)`: Calculates the elastic tensor for the relaxed structure.
 - `calculate_ev_curve(relaxed_atoms)`: Fits the energy-volume curve using an equation of state to obtain bulk modulus, minimum energy and equilibrium volume.
 - `run_phonon_analysis(relaxed_atoms)`: Performs phonon band structure calculations, density of states, and thermal properties using Phonopy.
-- `analyze_defects()`: Analyzes vacancy formation energies by generating defects, relaxing them, and calculating formation energies.
-- `analyze_surfaces()`: Analyzes surface energies by generating surface structures, relaxing them, and calculating surface energies.
-- `run_phonon3_analysis(relaxed_atoms)`: Runs third order force constant calculations for thermal conductivity using Phono3py.
+- `analyze_defects(relaxed_atoms)`: Analyzes vacancy formation energies by generating defects from the relaxed bulk structure, relaxing them, and calculating formation energies. Vacancies are named `<jid>_<element>_<Wyckoff letter>`, matching the JARVIS vacancy database.
+- `analyze_surfaces(relaxed_atoms)`: Analyzes surface energies by generating surface structures from the relaxed bulk structure, relaxing them, and calculating surface energies.
+- `run_phonon3_analysis(relaxed_atoms)`: Runs third order force constant calculations for thermal conductivity using Phono3py. Records the total lattice thermal conductivity κ<sub>xx</sub> (W/(m K)) from 100 to 1000 K.
 - `calculate_thermal_expansion(relaxed_atoms)`: Calculates the thermal expansion coefficient using the Quasi-Harmonic Approximation.
 - `general_melter(relaxed_atoms)`: Performs MD simulations to melt and quench the structure, then calculates the Radial Distribution Function (RDF). Can be used to generate amorphous structures. 
 - `analyze_interfaces()`: Performs interface analysis between film and substrate materials using the `intermat` package.
