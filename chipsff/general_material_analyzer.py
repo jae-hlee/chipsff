@@ -35,6 +35,7 @@ from chipsff.utils import (
     reference_value,
     elastic_reference,
     absolute_error,
+    strain_atoms,
 )
 
 # dft_3d = data("dft_3d")
@@ -470,7 +471,7 @@ class MaterialsAnalyzer:
 
         for i in dx:
             # Apply strain and calculate energy
-            strained_atoms = relaxed_atoms.strain_atoms(i)
+            strained_atoms = strain_atoms(relaxed_atoms, i)
             strained_structures.append(strained_atoms)
             ase_atoms = strained_atoms.ase_converter()
             ase_atoms.calc = self.calculator
@@ -1419,7 +1420,7 @@ class MaterialsAnalyzer:
 
         for i in dx:
             # Apply strain and get strained atoms
-            strained_atoms = atoms.strain_atoms(i)
+            strained_atoms = strain_atoms(atoms, i)
             ase_atoms = strained_atoms.ase_converter()  # Convert to ASE Atoms
             ase_atoms.calc = self.calculator  # Assign the calculator
 
