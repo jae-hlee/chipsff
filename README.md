@@ -78,6 +78,17 @@ The following libraries and tools are required:
 
 **Note**: Some calculators may have additional dependencies or require specific versions of libraries. Please refer to their respective documentation for setup instructions. To install the `intermat` package, see [here](https://github.com/usnistgov/intermat).
 
+### ALIGNN-FF models
+
+`alignn_ff` uses ALIGNN's default force field. The 2026 ALIGNN-FF models, trained with a per-element embedding, have their own calculator types: `alignn_ff_mptrj`, `alignn_ff_matpes_pbe`, `alignn_ff_matpes_r2scan` and `alignn_ff_omat24_1m`. These need an ALIGNN version that includes the element embedding (newer than 2026.8.11). Each one is downloaded from ALIGNN's model list, unless `calculator_settings` gives a local model directory:
+
+```json
+"calculator_type": "alignn_ff_mptrj",
+"calculator_settings": {"alignn_ff_mptrj": {"path": "/path/to/alignn_ff_mptrj"}}
+```
+
+Any `alignn_ff_<name>` type with a `path` loads that model. Give a new model its own type rather than a `path` under `alignn_ff`: element energies are stored per calculator type in `chemical_potentials.json`, so an `alignn_ff` run would reuse the default model's values and get wrong formation and vacancy energies. The optional `model_filename`, `stress_wt` and `device` settings are passed to `AlignnAtomwiseCalculator`.
+
 ## Input File Parameters
 
 The input configuration file is a JSON file that specifies all required settings for performing materials simulations. Below is a detailed explanation of each parameter and its expected values.
