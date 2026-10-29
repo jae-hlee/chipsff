@@ -38,10 +38,34 @@ def setup_calculator(calculator_type, calculator_settings):
             pot, compute_stress=compute_stress, stress_weight=stress_weight
         )
 
-    elif calculator_type == "alignn_ff":
-        from alignn.ff.ff import AlignnAtomwiseCalculator, default_path
+    elif calculator_type == "alignn_ff" or calculator_type.startswith(
+        "alignn_ff_"
+    ):
+        # "alignn_ff" is ALIGNN's default model. "alignn_ff_<name>" loads the
+        # model directory in settings["path"] or, without one, the model
+        # named "alignn_ff_<name>" in ALIGNN's model list (e.g.
+        # alignn_ff_mptrj). Each calculator type keeps its own element
+        # energies (energy_<type>) in chemical_potentials.json, so give a new
+        # model its own type rather than a "path" under "alignn_ff".
+        from alignn.ff.ff import (
+            AlignnAtomwiseCalculator,
+            get_all_models,
+            get_figshare_model_ff,
+        )
 
-        return AlignnAtomwiseCalculator()
+        kwargs = {
+            key: calculator_settings[key]
+            for key in ("path", "model_filename", "stress_wt", "device")
+            if key in calculator_settings
+        }
+        if calculator_type != "alignn_ff" and "path" not in kwargs:
+            if calculator_type not in get_all_models():
+                raise ValueError(
+                    f"{calculator_type} is not in the installed ALIGNN's model "
+                    "list; set calculator_settings path to the model directory"
+                )
+            kwargs["path"] = get_figshare_model_ff(model_name=calculator_type)
+        return AlignnAtomwiseCalculator(**kwargs)
 
     elif calculator_type == "mattersim":
         from mattersim.forcefield import MatterSimCalculator
