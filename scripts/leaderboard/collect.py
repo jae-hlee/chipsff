@@ -7,8 +7,9 @@ Usage:
 
 <out_dir> is OUT_ROOT/<run_name>/<calculator> as written by submit.sh. The
 output defaults to <out_dir>/predictions.json and holds, per material:
-a, b, c, vol (primitive-cell job), kv, c11, c44, form_en (conventional-cell
-job), surfaces {name: energy}, vacancies [[name, energy], ...] (kept as a
+a, b, c, vol (relaxed primitive cell), vol_eos (minimum of that job's E-V
+fit), kv, c11, c44, form_en (conventional-cell job), surfaces {name: energy},
+vacancies [[name, energy], ...] (kept as a
 list: chipsff versions before the Wyckoff-letter names give several sites of
 one element the same name), and each job's status and run time.
 """
@@ -21,6 +22,14 @@ import sys
 def load_json(path):
     with open(path) as f:
         return json.load(f)
+
+
+def cell_volume(lattice_mat):
+    """Volume of the cell spanned by the three rows of lattice_mat."""
+    (a1, a2, a3), (b1, b2, b3), (c1, c2, c3) = lattice_mat
+    return abs(
+        a1 * (b2 * c3 - b3 * c2) - a2 * (b1 * c3 - b3 * c1) + a3 * (b1 * c2 - b2 * c1)
+    )
 
 
 def main():
@@ -43,8 +52,14 @@ def main():
                 continue
             info = load_json(info_files[0])
             if kind == "geom":
-                abc = (info.get("relaxed_atoms") or {}).get("abc") or [None] * 3
-                rec.update(a=abc[0], b=abc[1], c=abc[2], vol=info.get("equilibrium_volume"))
+                relaxed = info.get("relaxed_atoms") or {}
+                abc = relaxed.get("abc") or [None] * 3
+                lattice = relaxed.get("lattice_mat")
+                rec.update(
+                    a=abc[0], b=abc[1], c=abc[2],
+                    vol=cell_volume(lattice) if lattice else None,
+                    vol_eos=info.get("equilibrium_volume"),
+                )
                 continue
             elastic = info.get("elastic_tensor") or {}
             rec.update(
